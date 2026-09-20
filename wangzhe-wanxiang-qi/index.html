@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>王者万象棋 · 玩法与上分方案（S1 公测版）</title>
+<style>
+  :root{
+    --bg:#0e1020; --bg2:#151934; --card:#1b2044; --card2:#232a54;
+    --line:#2c3466; --text:#eef1ff; --muted:#a7b0e0; --gold:#ffce6a; --gold2:#f5b942;
+    --t0:#ff5a7a; --t1:#ffa23a; --ok:#5ad19a; --blue:#5aa2ff; --purple:#a97bff;
+    /* 阵营配色 */
+    --c-sanfen:#ff7a59; --c-heluo:#f2c14e; --c-dahe:#4fb0ff; --c-riluohai:#37d3c4;
+    --c-zhulu:#c06bff; --c-tong:#9aa4d0;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:72px}
+  body{
+    margin:0; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #241a4d, transparent),
+      radial-gradient(1000px 500px at 0% 0%, #10233f, transparent),
+      var(--bg);
+    color:var(--text); line-height:1.7;
+  }
+  a{color:var(--gold)}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 20px}
+
+  /* 顶部 */
+  header.hero{
+    padding:46px 20px 30px; text-align:center;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(40,30,80,.5), transparent);
+  }
+  header.hero h1{margin:0; font-size:34px; letter-spacing:2px;
+    background:linear-gradient(90deg,#ffe4a3,#ffce6a,#f5b942);
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
+  header.hero .sub{color:var(--muted); margin-top:8px; font-size:15px}
+  .tagline{margin-top:16px; font-size:18px; font-weight:600}
+  .tagline b{color:var(--gold)}
+
+  /* 数据时效横幅 */
+  .notice{
+    max-width:1120px; margin:18px auto 0; padding:12px 16px; font-size:13px;
+    color:#ffe6b8; background:rgba(245,185,66,.10); border:1px solid rgba(245,185,66,.35);
+    border-radius:10px;
+  }
+
+  /* 导航 */
+  nav.tabs{position:sticky; top:0; z-index:20; background:rgba(14,16,32,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line);}
+  nav.tabs .wrap{display:flex; gap:6px; flex-wrap:wrap; padding:10px 20px}
+  nav.tabs a{color:var(--muted); text-decoration:none; font-size:14px; padding:7px 12px;
+    border-radius:8px; border:1px solid transparent}
+  nav.tabs a:hover{color:var(--text); background:var(--card)}
+  nav.tabs a.active{color:#1a1230; background:var(--gold); border-color:var(--gold); font-weight:700}
+
+  section{padding:38px 0 10px; border-bottom:1px dashed #232a54}
+  h2{font-size:24px; margin:0 0 6px; display:flex; align-items:center; gap:10px}
+  h2 .n{font-size:14px; color:#1a1230; background:var(--gold); border-radius:6px; padding:2px 8px}
+  h3{font-size:17px; margin:22px 0 8px; color:var(--gold)}
+  .lead{color:var(--muted); margin:4px 0 14px}
+  p{margin:8px 0}
+
+  .grid{display:grid; gap:14px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g2{grid-template-columns:1fr}}
+
+  .card{background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--line); border-radius:14px; padding:16px 18px}
+  .card h4{margin:0 0 6px; font-size:16px}
+  .card .k{color:var(--gold); font-weight:700}
+  .muted{color:var(--muted)}
+  .pill{display:inline-block; font-size:12px; padding:2px 9px; border-radius:999px;
+    border:1px solid var(--line); color:var(--muted); margin:2px 4px 2px 0}
+
+  /* 三步核心 */
+  .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  @media(max-width:820px){.steps{grid-template-columns:1fr}}
+  .step{background:linear-gradient(180deg,#20264f,#171b3a); border:1px solid var(--line);
+    border-radius:14px; padding:18px; position:relative; overflow:hidden}
+  .step .big{font-size:40px}
+  .step .t{font-size:19px; font-weight:800; color:var(--gold); margin:6px 0}
+
+  /* 时间线 */
+  .timeline{position:relative; margin:10px 0 0; padding-left:22px}
+  .timeline:before{content:""; position:absolute; left:6px; top:4px; bottom:4px; width:2px; background:var(--line)}
+  .tl{position:relative; margin:0 0 14px; padding:2px 0 2px 6px}
+  .tl:before{content:""; position:absolute; left:-19px; top:8px; width:11px; height:11px; border-radius:50%;
+    background:var(--gold); box-shadow:0 0 0 3px rgba(245,185,66,.2)}
+  .tl b{color:var(--text)}
+  .tl .auc{color:#1a1230; background:var(--gold); font-size:12px; padding:1px 7px; border-radius:6px; font-weight:700; margin-left:6px}
+
+  /* 表格 */
+  table{width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; overflow:hidden; border-radius:12px}
+  th,td{padding:9px 11px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  thead th{background:var(--card2); color:var(--gold); font-weight:700}
+  tbody tr:hover{background:rgba(90,162,255,.06)}
+
+  /* 阵营标签 */
+  .fac{font-size:12px; font-weight:700; padding:2px 8px; border-radius:6px; color:#12142c; white-space:nowrap}
+  .f-sanfen{background:var(--c-sanfen)} .f-heluo{background:var(--c-heluo)}
+  .f-dahe{background:var(--c-dahe)} .f-riluohai{background:var(--c-riluohai)}
+  .f-zhulu{background:var(--c-zhulu)} .f-tong{background:var(--c-tong)}
+
+  /* Tier 阵容卡 */
+  .tier-head{display:flex; align-items:center; gap:12px; margin:8px 0 12px}
+  .tier-badge{font-size:22px; font-weight:900; color:#fff; background:linear-gradient(135deg,var(--t0),#c0304f);
+    border-radius:12px; padding:6px 16px; box-shadow:0 6px 16px rgba(255,90,122,.35)}
+  .comp{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line);
+    border-radius:14px; padding:16px 18px; position:relative}
+  .comp .title{font-size:18px; font-weight:800; margin:0 0 6px}
+  .comp .core{display:inline-block; background:rgba(245,185,66,.15); border:1px solid rgba(245,185,66,.4);
+    color:var(--gold); border-radius:8px; padding:2px 10px; font-size:13px; margin:2px 0 8px; font-weight:700}
+  .members{margin:6px 0}
+  .members .m{display:inline-block; font-size:13px; padding:3px 9px; margin:3px 4px 0 0;
+    border:1px solid var(--line); border-radius:8px; background:#12162f}
+  .members .m.c{border-color:var(--gold); color:var(--gold)}
+  .meta{display:flex; gap:14px; flex-wrap:wrap; font-size:13px; margin-top:8px; color:var(--muted)}
+  .meta b{color:var(--text)}
+  .rate{display:inline-flex; gap:3px; align-items:center}
+  .dot{width:9px;height:9px;border-radius:50%;background:#3a4275}
+  .dot.on{background:var(--gold)}
+
+  .callout{background:rgba(90,162,255,.08); border-left:3px solid var(--blue);
+    padding:10px 14px; border-radius:0 10px 10px 0; margin:10px 0}
+  .callout.gold{background:rgba(245,185,66,.08); border-color:var(--gold)}
+  .callout.warn{background:rgba(255,90,122,.08); border-color:var(--t0)}
+
+  ul.clean{margin:6px 0; padding-left:20px} ul.clean li{margin:4px 0}
+  .kbd{font-size:12px; background:#12162f; border:1px solid var(--line); border-radius:6px; padding:1px 7px}
+  footer{padding:30px 0 60px; color:var(--muted); font-size:13px}
+  .src a{display:block; margin:3px 0}
+  .totop{position:fixed; right:18px; bottom:18px; background:var(--gold); color:#1a1230; font-weight:800;
+    border:none; border-radius:10px; padding:10px 14px; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.4); display:none}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>王者万象棋 · 玩法与上分方案</h1>
+    <div class="sub">《王者荣耀》原班团队打造的英雄策略自走棋 ｜ S1 赛季（2026 公测）</div>
+    <div class="tagline">核心一句话：<b>一刷</b>（找核心） · <b>二养</b>（单核升级） · <b>三炸场</b>（成型爆发）</div>
+    <div class="sub" style="margin-top:12px">📎 专题：<a href="changxiaoe-openings.html">《常小鹅 · 起手分支与阵容运营详解》</a>（狂铁/苏烈/干将起手 · 逐回合 · 优缺点与克制）</div>
+    <div class="sub" style="margin-top:6px">📎 专题：<a href="streamer-synergy.html">《主播主流阵容 · 词条联动增益详解》</a>（海陆空/艾琳冰冻/李信小鹿/姜子牙/海月 · 词条如何配合）</div>
+    <div class="sub" style="margin-top:6px">📎 专题：<a href="changxiaoe-carries.html">《常小鹅可养主C全解》</a>（司空震/马超/艾琳/双养五阶 · 路径·词条·优缺点与克制）</div>
+  </div>
+</header>
+
+<div class="notice">
+  ⏱️ <b>数据时效说明</b>：本方案综合 2026 年 8 月体验服与 9 月公测 S1 的公开攻略整理。自走棋版本更新快，具体英雄词条 / 阵容强度以<strong>正式服与游戏内「灵宝」实时推荐</strong>为准；本页给出的是可长期复用的<strong>体系框架与运营思路</strong>。来源见文末。
+</div>
+
+<nav class="tabs">
+  <div class="wrap">
+    <a href="#overview">① 玩法总览</a>
+    <a href="#mechanics">② 核心机制</a>
+    <a href="#keywords">③ 关键词条</a>
+    <a href="#heroes">④ 关键英雄</a>
+    <a href="#tier">⑤ 最强阵容 T0</a>
+    <a href="#playbook">⑥ 详细操作手法</a>
+    <a href="#sources">⑦ 来源</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ① 总览 -->
+<section id="overview">
+  <h2><span class="n">01</span> 玩法总览</h2>
+  <p class="lead">王者万象棋是一款 <b>6 人同台</b> 的策略自走棋：每人初始 <b>60 点生命</b>，用《王者荣耀》英雄组建阵容互相对战，战败掉血、血量清空即被淘汰，<b>存活到最后获胜</b>（前三名均有奖励，稳健保前三亦可）。它在「王者模拟战」基础上做了体系升级，节奏更紧凑、上手门槛更低，单局约 20 分钟。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="big">🔄</div><div class="t">一刷 · 找核心</div>
+      <div class="muted">刷新商店寻找能组成核心体系的棋子。英雄不分费用统一 <b>3 能量</b>，越高阶越稀有；提升<b>棋手等级</b>可提高高阶抽取概率。</div>
+    </div>
+    <div class="step">
+      <div class="big">📈</div><div class="t">二养 · 单核升级</div>
+      <div class="muted">摒弃「三合一升星」，改为 <b>1→999 级</b> 升级。靠合成、锦囊、英雄/棋手技能、天赋、<b>词条联动</b>把资源集中喂给<b>一名主 C</b>。</div>
+    </div>
+    <div class="step">
+      <div class="big">💥</div><div class="t">三炸场 · 成型爆发</div>
+      <div class="muted">主 C 达到 <b>10 / 40 / 100 级</b> 质变点后技能形态与输出机制升级，阵容大成即可一波炸场碾压。</div>
+    </div>
+  </div>
+
+  <h3>与传统自走棋的三大区别</h3>
+  <div class="grid g3">
+    <div class="card"><h4>固定经济</h4><div class="muted">取消<b>利息</b>与<b>连胜连败</b>，每回合能量固定。不用抠利息，精力全放在<b>选棋、搭配、站位</b>上。</div></div>
+    <div class="card"><h4>无限等级替代升星</h4><div class="muted">没有升星，改为升级，上限 <b>999</b>。低费棋子靠词条叠加同样能养满级，不唯高费论。</div></div>
+    <div class="card"><h4>凑「效果」而非凑「羁绊」</h4><div class="muted">胜负关键是<b>卡牌词条联动</b>形成的连锁反应，而非单纯堆高费或凑羁绊。</div></div>
+  </div>
+</section>
+
+<!-- ② 机制 -->
+<section id="mechanics">
+  <h2><span class="n">02</span> 核心机制与资源</h2>
+  <p class="lead">理解四件事就能上手：<b>能量与升本</b>、<b>拍卖节点</b>、<b>棋手系统</b>、<b>等级质变</b>。</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <h4>💠 能量 / 升本</h4>
+      <ul class="clean muted">
+        <li>每回合获得<b>固定能量</b>，英雄统一 <b>3 能量</b> 购买。</li>
+        <li>提升<b>棋手等级（升本）</b>→ 提高高阶英雄出现概率、增加人口。</li>
+        <li>参考节奏：约 <span class="kbd">4 回合升 3 本</span>、<span class="kbd">6 回合升 4 本</span>、<span class="kbd">8 回合升 5 本</span>（各攻略略有出入，以实战血量为准）。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🔨 拍卖会</h4>
+      <ul class="clean muted">
+        <li>在第 <b>3 / 7 / 11</b> 回合后开启，是获取强力英雄与特殊<b>效果牌</b>的关键渠道。</li>
+        <li>提前<b>预留能量</b>竞拍；优先抢<b>自己核心阵营</b>的牌，必要时<b>ban 掉对手</b>强势体系的关键牌。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🎖️ 棋手系统</h4>
+      <ul class="clean muted">
+        <li>每位棋手自带<b>主动技能牌</b>，可释放以强化阵容 / 扭转节奏（类似召唤师技能）。</li>
+        <li>示例：马可靠不停刷 3 费及以下棋子获取<b>宝藏牌</b>；不同棋手适配不同体系。</li>
+        <li>开局<b>三选一</b>选棋手，务必匹配你想打的体系。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>⚡ 等级质变点</h4>
+      <ul class="clean muted">
+        <li>关键节点：<b>10 / 40 / 100 级</b>，到达后英雄技能形态与输出机制<b>质变</b>。</li>
+        <li>上限 <b>999 级</b>，每级都带来稳定战力提升。</li>
+        <li>合理搭配羁绊词条（如登场拉级）可<b>单回合大量升级</b>——这是养成的核心乐趣。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout gold">🧭 <b>新手辅助</b>：游戏内 AI「灵宝」会实时推荐装备与阵容，拿不准时可直接参考，快速减少试错成本。</div>
+</section>
+
+<!-- ③ 关键词条 -->
+<section id="keywords">
+  <h2><span class="n">03</span> 关键词条（机制核心）</h2>
+  <p class="lead">词条 = 关键词效果，在不同阶段触发、互相增益，形成<b>多层响应链</b>。看懂词条，才看懂这个游戏。</p>
+  <table>
+    <thead><tr><th>词条</th><th>触发时机</th><th>代表英雄 / 效果</th><th>用法</th></tr></thead>
+    <tbody>
+      <tr><td><b>登场</b></td><td>英雄首次上场时立即触发</td><td>周瑜：全场英雄等级 +1；貂蝉：三分阵营 +1 级；蒙犽 / 庄周为优质登场</td><td>快速拉核心与全队等级，是「炸场」提速的关键</td></tr>
+      <tr><td><b>整备</b></td><td>战斗结束后的准备阶段生效</td><td>曹操：整备阶段随机召唤一名三分英雄；露娜 / 雅典娜触发整备</td><td>河洛有 4 个整备棋子，配合露娜可极快拉等级</td></tr>
+      <tr><td><b>交锋</b></td><td>战斗开始瞬间发动</td><td>云中君：为己方穿戴装备的英雄提供等级加成</td><td>开战即时增益，配合装备流放大爆发</td></tr>
+      <tr><td><b>牺牲</b></td><td>英雄阵亡时触发</td><td>苏烈：死亡后，下回合自身等级永久 +2</td><td>「越死越强」的滚雪球零件，前排必备</td></tr>
+      <tr><td><b>闪现</b></td><td>开局直接位移到敌方半场攻击</td><td>刺客 / 切入型英雄</td><td>注意<b>镜像站位</b>：放前排会导致无效跳跃，需摆后排</td></tr>
+      <tr><td><b>古币</b></td><td>河洛体系核心资源</td><td>李元芳：对最近的河洛英雄使用一张古币（拉等级）</td><td>把古币集中给主 C（如百里玄策）快速拉满级</td></tr>
+      <tr><td><b>图腾</b></td><td>召唤持续存在的图腾单位</td><td>鬼谷子 / 大司命 / 少司缘召唤，图腾等级随本体；东皇太一每个图腾 +15%</td><td>大河图腾流的地基，保护图腾即保护战力</td></tr>
+      <tr><td><b>效果牌 / 锦囊</b></td><td>主动使用</td><td>临阵磨枪、唤醒等：直接拉等级 / 提供强增益</td><td>后期囤牌，成型时一次性拉满核心等级</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ④ 关键英雄 -->
+<section id="heroes">
+  <h2><span class="n">04</span> 关键英雄与棋手</h2>
+  <p class="lead">按「主 C 候选」与「功能核心」两类记忆最高效。阵营用色块标注：
+    <span class="fac f-sanfen">三分</span>
+    <span class="fac f-heluo">河洛</span>
+    <span class="fac f-dahe">大河</span>
+    <span class="fac f-riluohai">日落海</span>
+    <span class="fac f-zhulu">逐鹿</span>
+    <span class="fac f-tong">通用</span>
+  </p>
+
+  <h3>🎯 主 C 候选（把资源全喂给它）</h3>
+  <table>
+    <thead><tr><th>英雄</th><th>阵营</th><th>体系 / 定位</th><th>成型思路</th></tr></thead>
+    <tbody>
+      <tr><td><b>花木兰</b></td><td><span class="fac f-tong">通用</span></td><td>复活流主 C</td><td>靠古币 + 整备反复触发复活，单回合最多复活约 10 次，拖入加时赛碾压</td></tr>
+      <tr><td><b>百里玄策</b></td><td><span class="fac f-heluo">河洛</span></td><td>河洛古币流主 C</td><td>全队古币集中喂给玄策拉满级，钟馗降敌等级容错</td></tr>
+      <tr><td><b>敖隐</b></td><td><span class="fac f-dahe">大河</span></td><td>大河图腾流主 C</td><td>图腾拉级 + 东皇保护，阵容顺滑好成型，适合新手</td></tr>
+      <tr><td><b>嬴政</b></td><td><span class="fac f-zhulu">逐鹿</span></td><td>逐鹿流主 C</td><td>芈月减蓝、西施拉级，稳住前期后期爆发</td></tr>
+      <tr><td><b>曹操</b></td><td><span class="fac f-sanfen">三分</span></td><td>三分倒转流核心</td><td>整备随机召唤三分英雄，配合周瑜 / 貂蝉登场拉级，永动机上限最高</td></tr>
+    </tbody>
+  </table>
+
+  <h3>🛠️ 功能核心（体系发动机）</h3>
+  <div class="grid g3">
+    <div class="card"><h4>苏烈 <span class="fac f-heluo">河洛</span></h4><div class="muted"><span class="k">牺牲</span>：死后自身永久 +2 级，前排「越死越强」的滚雪球零件。</div></div>
+    <div class="card"><h4>周瑜 / 貂蝉 <span class="fac f-sanfen">三分</span></h4><div class="muted"><span class="k">登场</span>：全体 / 三分阵营 +1 级，单回合成批拉等级。</div></div>
+    <div class="card"><h4>露娜 <span class="fac f-tong">通用</span></h4><div class="muted"><span class="k">整备</span>联动，与整备棋子配合快速堆核心等级。</div></div>
+    <div class="card"><h4>钟馗 <span class="fac f-heluo">河洛</span></h4><div class="muted">降低<b>敌方</b>等级，压制对手核心，为己方主 C 创造输出空间。</div></div>
+    <div class="card"><h4>东皇太一 <span class="fac f-dahe">大河</span></h4><div class="muted">核心坦克，每拥有一个图腾 +15%，保护图腾与后排。</div></div>
+    <div class="card"><h4>盾山 / 程咬金 <span class="fac f-heluo">河洛</span></h4><div class="muted">前排肉盾兼<b>产古币</b>，稳血线的同时供养主 C。</div></div>
+    <div class="card"><h4>太乙真人 <span class="fac f-tong">通用</span></h4><div class="muted">后期补入，提供复活 / 容错，放大核心的试错空间。</div></div>
+    <div class="card"><h4>西施 / 芈月 <span class="fac f-zhulu">逐鹿</span></h4><div class="muted">一个拉等级、一个减蓝，逐鹿体系必备的<b>战术</b>效果牌载体。</div></div>
+    <div class="card"><h4>虞姬 <span class="fac f-dahe">大河</span></h4><div class="muted">场上有图腾时，为自身及两名大河图腾系英雄拉级，前期还能打输出。</div></div>
+  </div>
+
+  <h3>🎖️ 棋手推荐</h3>
+  <div class="grid g2">
+    <div class="card"><h4>体系向</h4><div class="muted">复活木兰：<b>嬴政 / 庄小鱼 / 弈星</b>；逐鹿嬴政：<b>孙小兵 / 明先生</b>。</div></div>
+    <div class="card"><h4>新手向</h4><div class="muted">优先 <b>常小娥 / 香香</b> 等节奏稳、容错高的棋手；配合灵宝推荐快速入门。</div></div>
+  </div>
+</section>
+
+<!-- ⑤ 最强阵容 -->
+<section id="tier">
+  <h2><span class="n">05</span> 当前最强阵容（T0）</h2>
+  <div class="tier-head"><span class="tier-badge">T0</span><span class="muted">公测初期天花板体系 · 建议按「熟练度 + 对局 ban/pick」灵活选择</span></div>
+
+  <div class="grid g2">
+
+    <div class="comp">
+      <div class="title">1 · 复活花木兰流 <span class="fac f-tong">通用</span></div>
+      <div class="core">主 C：花木兰</div>
+      <div class="members">
+        <span class="m c">花木兰</span><span class="m">程咬金</span><span class="m">盾山</span>
+        <span class="m">上官婉儿</span><span class="m">李白</span><span class="m">武则天</span>
+      </div>
+      <p class="muted">古币 + 整备反复触发木兰复活，单回合最多复活约 10 次，拖入加时赛直接碾压。稳健、抗压强。</p>
+      <div class="meta">
+        <span>强度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i></span></span>
+        <span>难度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i></span></span>
+        <span>棋手：<b>嬴政 / 庄小鱼 / 弈星</b></span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <div class="title">2 · 三分倒转流 <span class="fac f-sanfen">三分</span></div>
+      <div class="core">核心：曹操（永动机体系）</div>
+      <div class="members">
+        <span class="m c">曹操</span><span class="m">蔡文姬</span><span class="m">周瑜</span>
+        <span class="m">吕布</span><span class="m">赵云</span><span class="m">小乔</span><span class="m">貂蝉</span>
+      </div>
+      <p class="muted">整备召唤 + 登场拉级形成永动机，<b>上限最高</b>的搭配。对局中<b>建议 ban 河洛</b>。</p>
+      <div class="meta">
+        <span>强度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i></span></span>
+        <span>难度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></span>
+        <span>特点：<b>上限天花板</b></span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <div class="title">3 · 日落海整备流 <span class="fac f-riluohai">日落海</span></div>
+      <div class="core">思路：整备叠核心等级</div>
+      <div class="members">
+        <span class="m c">阿古朵</span><span class="m">雅典娜</span><span class="m">安琪拉</span>
+        <span class="m">朵莉亚</span><span class="m">海诺</span><span class="m">狂铁</span><span class="m">米莱迪</span>
+      </div>
+      <p class="muted">前期用狂铁 / 米莱迪 / 安琪拉的<b>整备</b>配合朵莉亚拉核心与阵容等级，后期雅典娜 / 海诺进一步加强。</p>
+      <div class="meta">
+        <span>强度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></span>
+        <span>难度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i></span></span>
+        <span>成员名单以版本为准</span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <div class="title">4 · 大河图腾流 <span class="fac f-dahe">大河</span></div>
+      <div class="core">主 C：敖隐 ｜ 核心坦克：东皇太一</div>
+      <div class="members">
+        <span class="m c">敖隐</span><span class="m">鬼谷子</span><span class="m">大司命</span>
+        <span class="m">少司缘</span><span class="m">虞姬</span><span class="m">东皇太一</span>
+      </div>
+      <p class="muted">鬼谷子 / 少司缘 / 大司命召唤图腾，虞姬拉级，前期虞姬打输出、后期敖隐主 C，东皇护图腾。<b>新手友好、顺滑好成型</b>。</p>
+      <div class="meta">
+        <span>强度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></span>
+        <span>难度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></span></span>
+        <span>特点：<b>最适合新手</b></span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <div class="title">5 · 河洛古币流 <span class="fac f-heluo">河洛</span></div>
+      <div class="core">主 C：百里玄策</div>
+      <div class="members">
+        <span class="m c">百里玄策</span><span class="m">盾山</span><span class="m">钟馗</span>
+        <span class="m">程咬金</span><span class="m">武则天</span><span class="m">太乙真人</span><span class="m">李元芳</span><span class="m">上官婉儿</span>
+      </div>
+      <p class="muted">李元芳 / 盾山 / 程咬金 / 上官婉儿产古币，集中喂给玄策；钟馗降敌等级，后期太乙补容错与输出空间。</p>
+      <div class="meta">
+        <span>强度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></span>
+        <span>难度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i></span></span>
+        <span>河洛几乎每张卡都好用</span>
+      </div>
+    </div>
+
+    <div class="comp">
+      <div class="title">6 · 逐鹿嬴政流 <span class="fac f-zhulu">逐鹿</span></div>
+      <div class="core">主 C：嬴政（建议 ban 日落海）</div>
+      <div class="members">
+        <span class="m c">嬴政</span><span class="m">芈月</span><span class="m">庄周</span>
+        <span class="m">白起</span><span class="m">西施</span><span class="m">鲁班七号</span>
+      </div>
+      <p class="muted">芈月减蓝、西施拉级，庄周 / 白起前排保护，前期稳住、后期嬴政爆发。</p>
+      <div class="meta">
+        <span>强度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i></span></span>
+        <span>难度 <span class="rate"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i></span></span>
+        <span>棋手：<b>孙小兵 / 明先生</b></span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout gold">🏆 <b>怎么选</b>：想稳 → <b>大河图腾</b>（好成型）或 <b>复活木兰</b>（抗压）；想冲上限 → <b>三分倒转</b>；熟练玩家看对局 ban/pick 灵活切 <b>河洛 / 逐鹿 / 日落海</b>。核心原则永远是<strong>单核养成、资源集中</strong>。</div>
+</section>
+
+<!-- ⑥ 操作手法 -->
+<section id="playbook">
+  <h2><span class="n">06</span> 详细操作手法</h2>
+  <p class="lead">通用三阶段运营 + 四条铁律 + 招牌连招。以「复活木兰 / 河洛 / 大河图腾」为例给出可照抄的节奏。</p>
+
+  <h3>⏳ 分阶段运营时间线</h3>
+  <div class="timeline">
+    <div class="tl"><b>1–3 回合（开局）</b>：低费棋子<b>填满棋盘稳血</b>，尽早<b>锁定一名主 C</b>，用检索 / 搜卡抓对应联动角色，不要贪多分散资源。<span class="auc">第 3 回合后 · 拍卖</span></div>
+    <div class="tl"><b>4–6 回合（成长）</b>：约 4 回合升 3 本；拍卖优先拿<b>核心阵营</b>的牌，缺前排就补<b>盾山 / 程咬金</b>，随后<b>存能量</b>。</div>
+    <div class="tl"><b>7 回合（关键拍卖）</b>：抢核心英雄 / 关键效果牌，或 ban 掉对手强势体系的牌。<span class="auc">第 7 回合后 · 拍卖</span></div>
+    <div class="tl"><b>8–11 回合（大成）</b>：搜齐体系棋子，阵容大成；囤<b>临阵磨枪 / 唤醒</b>等效果牌，觉醒回手换血，按对手强度决定复活 / 拉级次数。<span class="auc">第 11 回合后 · 拍卖</span></div>
+    <div class="tl"><b>12 回合 +（炸场 / 加时）</b>：主 C 拉到上百级、阵容成型，一波炸场；复活流可拖进加时赛用 3–10 次复活碾压。</div>
+  </div>
+
+  <h3>📏 四条铁律</h3>
+  <div class="grid g2">
+    <div class="card"><h4>① 单核养成，资源集中</h4><div class="muted">全部资源倾斜给<b>一名主 C</b>。哪怕全场五阶英雄，没有有效联动照样很拉；低费棋子靠词条叠加也能满级。</div></div>
+    <div class="card"><h4>② 凑效果链，而非堆高费</h4><div class="muted">围绕<b>登场 / 整备 / 牺牲 / 古币 / 图腾</b>搭出连锁反应，再补增益战力。</div></div>
+    <div class="card"><h4>③ 站位讲究</h4><div class="muted">前排肉 / 坦，后排主 C 与脆皮；<b>闪现</b>英雄务必放<b>后排</b>（镜像机制下前排会无效跳）；图腾 / 核心重点保护。</div></div>
+    <div class="card"><h4>④ 拍卖预留，善用 ban</h4><div class="muted">3 / 7 / 11 回合前留能量；抢自己核心牌，同时<b>ban 对手</b>（如打三分倒转就 ban 河洛）。</div></div>
+  </div>
+
+  <h3>🔗 招牌连招 / 成型链</h3>
+  <div class="grid g3">
+    <div class="card"><h4>复活木兰</h4><div class="muted">古币 + 整备反复触发木兰<b>复活</b> → 囤<b>临阵磨枪 / 唤醒</b> → 单回合最多约 10 次复活 → <b>加时赛碾压</b>。</div></div>
+    <div class="card"><h4>河洛古币链</h4><div class="muted">李元芳古币 → 苏烈<b>牺牲</b>永久 +2 → 与狄仁杰联动叠古币 → 集中拉<b>百里玄策</b>，钟馗降敌等级容错。</div></div>
+    <div class="card"><h4>大河图腾链</h4><div class="muted">鬼谷 / 少司缘 / 大司命<b>召唤图腾</b> → 虞姬拉级 → 东皇太一每图腾 <b>+15%</b> 且护塔 → 敖隐主 C 输出。</div></div>
+    <div class="card"><h4>三分永动机</h4><div class="muted">曹操整备<b>召唤三分</b> → 周瑜 / 貂蝉<b>登场</b>批量 +级 → 蔡文姬续航 → 循环滚雪球，上限最高。</div></div>
+    <div class="card"><h4>日落海整备</h4><div class="muted">狂铁 / 米莱迪 / 安琪拉<b>整备</b> → 朵莉亚拉核心 → 雅典娜 / 海诺后期加强 → 核心等级堆爆。</div></div>
+    <div class="card"><h4>逐鹿嬴政</h4><div class="muted">芈月减蓝 + 西施拉级 → 庄周 / 白起前排保护 → 嬴政后期成型爆发。</div></div>
+  </div>
+
+  <div class="callout warn">⚠️ <b>常见误区</b>：① 盲目堆高费却无联动；② 资源分散养两个 C；③ 闪现英雄放前排导致无效跳；④ 不留能量错过关键拍卖；⑤ 死记传统自走棋利息 / 升星思路（本作已取消）。</div>
+</section>
+
+<!-- ⑦ 来源 -->
+<section id="sources">
+  <h2><span class="n">07</span> 数据来源与免责声明</h2>
+  <p class="muted">本方案为二次整理，用于快速理解体系与运营框架。英雄词条、阵容强度、成员名单会随版本频繁调整，请以<strong>正式服与游戏内「灵宝」推荐</strong>为准。整理时间：2026-09。</p>
+  <div class="src">
+    <a href="https://koc.qq.com/" target="_blank" rel="noopener">腾讯游戏 · 王者万象棋官网</a>
+    <a href="https://www.taptap.cn/moment/847124382366041809" target="_blank" rel="noopener">TapTap · 9.10 公测 6 套 T0 阵容推荐</a>
+    <a href="https://www.taptap.cn/moment/842341696158041248" target="_blank" rel="noopener">TapTap · 新手机制全解析（卡片联动到阵容大成）</a>
+    <a href="https://www.taptap.cn/moment/847208168202175603" target="_blank" rel="noopener">TapTap · 公测快速上手玩法 + 阵容搭配</a>
+    <a href="https://news.17173.com/content/08132026/140021075.shtml" target="_blank" rel="noopener">17173 · 新手入坑指南（固定经济 + 无限等级）</a>
+    <a href="https://www.233leyuan.com/post-detail/2005234762784702464" target="_blank" rel="noopener">233 乐园 · 规则 + 玩法 + 运营入门三讲</a>
+    <a href="https://www.jiaoyimao.com/news/357570.html" target="_blank" rel="noopener">交易猫 · 基础规则与上手技巧详解</a>
+    <a href="https://www.61893.com/s-2-9375da210de32b2f/" target="_blank" rel="noopener">品阅网 · 弄懂 3 个机制上分</a>
+  </div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  王者万象棋 · 玩法与上分方案 ｜ 本页为非官方玩家攻略整理，与腾讯 / 游戏官方无隶属关系。祝上分顺利，稳拿前三。
+</footer>
+
+<button class="totop" id="totop" title="回到顶部">↑ 顶部</button>
+
+<script>
+  // 导航高亮 + 回到顶部
+  const links = [...document.querySelectorAll('nav.tabs a')];
+  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+  const totop = document.getElementById('totop');
+  function onScroll(){
+    const y = window.scrollY + 120;
+    let idx = 0;
+    secs.forEach((s,i)=>{ if(s && s.offsetTop <= y) idx = i; });
+    links.forEach((a,i)=> a.classList.toggle('active', i===idx));
+    totop.style.display = window.scrollY > 500 ? 'block' : 'none';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  totop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+</script>
+</body>
+</html>

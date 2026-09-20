@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>王者万象棋 · 常小鹅起手分支与阵容运营详解</title>
+<style>
+  :root{
+    --bg:#0e1020; --bg2:#151934; --card:#1b2044; --card2:#232a54;
+    --line:#2c3466; --text:#eef1ff; --muted:#a7b0e0; --gold:#ffce6a; --gold2:#f5b942;
+    --ok:#5ad19a; --warn:#ffb35a; --bad:#ff6b81; --blue:#5aa2ff; --purple:#a97bff;
+    --a:#ff8a5c; --b:#5ad1a0; --c:#7db4ff; /* 三条起手支线配色 A狂铁 B苏烈 C干将 */
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:72px}
+  body{margin:0; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%, #241a4d, transparent),
+      radial-gradient(1000px 500px at 0% 0%, #10233f, transparent), var(--bg);
+    color:var(--text); line-height:1.75;}
+  a{color:var(--gold)}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 20px}
+
+  header.hero{padding:44px 20px 26px; text-align:center; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(40,30,80,.5), transparent);}
+  header.hero h1{margin:0; font-size:31px; letter-spacing:1px;
+    background:linear-gradient(90deg,#ffe4a3,#ffce6a,#f5b942);
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
+  header.hero .sub{color:var(--muted); margin-top:8px; font-size:15px}
+  header .crumbs{margin-top:10px; font-size:13px}
+
+  .notice{max-width:1120px; margin:16px auto 0; padding:12px 16px; font-size:13px; color:#ffe6b8;
+    background:rgba(245,185,66,.10); border:1px solid rgba(245,185,66,.35); border-radius:10px;}
+
+  nav.tabs{position:sticky; top:0; z-index:20; background:rgba(14,16,32,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line);}
+  nav.tabs .wrap{display:flex; gap:6px; flex-wrap:wrap; padding:10px 20px}
+  nav.tabs a{color:var(--muted); text-decoration:none; font-size:14px; padding:7px 12px;
+    border-radius:8px; border:1px solid transparent}
+  nav.tabs a:hover{color:var(--text); background:var(--card)}
+  nav.tabs a.active{color:#1a1230; background:var(--gold); border-color:var(--gold); font-weight:700}
+
+  section{padding:36px 0 10px; border-bottom:1px dashed #232a54}
+  h2{font-size:23px; margin:0 0 6px; display:flex; align-items:center; gap:10px}
+  h2 .n{font-size:14px; color:#1a1230; background:var(--gold); border-radius:6px; padding:2px 8px}
+  h3{font-size:17px; margin:20px 0 8px; color:var(--gold)}
+  .lead{color:var(--muted); margin:4px 0 14px}
+  p{margin:8px 0}
+
+  .grid{display:grid; gap:14px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:860px){.g3,.g2{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line);
+    border-radius:14px; padding:16px 18px}
+  .card h4{margin:0 0 6px; font-size:16px}
+  .muted{color:var(--muted)}
+  .k{color:var(--gold); font-weight:700}
+
+  table{width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border-radius:12px; overflow:hidden}
+  th,td{padding:9px 11px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  thead th{background:var(--card2); color:var(--gold); font-weight:700}
+  tbody tr:hover{background:rgba(90,162,255,.06)}
+  td .r{color:var(--gold); font-weight:700; white-space:nowrap}
+
+  .tag{font-size:12px; font-weight:700; padding:2px 8px; border-radius:6px; color:#12142c; white-space:nowrap}
+  .t-zhengbei{background:#5ad1a0} .t-xisheng{background:#ff9a6b} .t-dengchang{background:#7db4ff}
+  .t-guobi{background:#f2c14e} .t-chuancheng{background:#c79bff} .t-jisha{background:#ff7a90}
+  .t-zhuli{background:#ffce6a} .t-kongzhi{background:#8ad0ff}
+
+  .branch{display:grid; grid-template-columns:120px 1fr; gap:12px; align-items:center; margin:8px 0}
+  .branch .src{background:linear-gradient(135deg,#2a2350,#1a1e3e); border:1px solid var(--line);
+    border-radius:12px; padding:12px; text-align:center; font-weight:800}
+  .branch .arrows{display:flex; flex-direction:column; gap:8px}
+  .branch .to{background:#141833; border:1px solid var(--line); border-left:4px solid var(--gold);
+    border-radius:8px; padding:8px 12px; font-size:14px}
+
+  .op{border-left:4px solid var(--a); padding-left:2px}
+  .op.a{--op:var(--a)} .op.b{--op:var(--b)} .op.c{--op:var(--c)}
+  .op h3{color:var(--op)}
+  .op .members .m{border-color:var(--op)}
+  .members{margin:6px 0}
+  .members .m{display:inline-block; font-size:13px; padding:3px 9px; margin:3px 4px 0 0;
+    border:1px solid var(--line); border-radius:8px; background:#12162f}
+  .members .m.core{background:rgba(245,185,66,.15); border-color:var(--gold); color:var(--gold); font-weight:700}
+
+  .callout{background:rgba(90,162,255,.08); border-left:3px solid var(--blue); padding:10px 14px;
+    border-radius:0 10px 10px 0; margin:10px 0}
+  .callout.gold{background:rgba(245,185,66,.08); border-color:var(--gold)}
+  .callout.warn{background:rgba(255,179,90,.08); border-color:var(--warn)}
+  .callout.bad{background:rgba(255,107,129,.08); border-color:var(--bad)}
+
+  ul.clean{margin:6px 0; padding-left:20px} ul.clean li{margin:4px 0}
+  .pm{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px}
+  @media(max-width:860px){.pm{grid-template-columns:1fr}}
+  .pros{background:rgba(90,209,154,.08); border:1px solid rgba(90,209,154,.3); border-radius:10px; padding:10px 14px}
+  .cons{background:rgba(255,107,129,.08); border:1px solid rgba(255,107,129,.3); border-radius:10px; padding:10px 14px}
+  .pros h4{color:var(--ok); margin:0 0 4px} .cons h4{color:var(--bad); margin:0 0 4px}
+  .win{color:var(--ok); font-weight:700} .lose{color:var(--bad); font-weight:700}
+
+  .kbd{font-size:12px; background:#12162f; border:1px solid var(--line); border-radius:6px; padding:1px 7px}
+  footer{padding:28px 0 60px; color:var(--muted); font-size:13px}
+  .src a{display:block; margin:3px 0}
+  .totop{position:fixed; right:18px; bottom:18px; background:var(--gold); color:#1a1230; font-weight:800;
+    border:none; border-radius:10px; padding:10px 14px; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.4); display:none}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>常小鹅 · 起手分支与阵容运营详解</h1>
+    <div class="sub">王者万象棋 ｜ 以「常小鹅（常小娥）」为棋手，不同起手英雄 → 不同阵容 / 逐回合运营 / 词条机制 / 优缺点与克制</div>
+    <div class="crumbs muted">配套总览：<a href="index.html">《王者万象棋 · 玩法与上分方案》</a></div>
+  </div>
+</header>
+
+<div class="notice">
+  ⏱️ <b>数据时效</b>：综合 2026-08 体验服与 09 公测 S1 公开攻略整理（常小鹅即游戏内「常小娥」）。自走棋版本更新快，英雄词条 / 数值 / 阵容强度以<strong>正式服与游戏内「灵宝」推荐</strong>为准；部分秘技节点各攻略数值略有出入，已在文中标注。
+</div>
+
+<nav class="tabs">
+  <div class="wrap">
+    <a href="#hero">① 棋手机制</a>
+    <a href="#open">② 通用开局铁律</a>
+    <a href="#a">③ 狂铁起手</a>
+    <a href="#b">④ 苏烈起手</a>
+    <a href="#c">⑤ 干将起手</a>
+    <a href="#kw">⑥ 词条速查</a>
+    <a href="#compare">⑦ 特点·优缺点·克制</a>
+    <a href="#src">⑧ 来源</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- 棋手机制 -->
+<section id="hero">
+  <h2><span class="n">01</span> 常小鹅（常小娥）棋手机制</h2>
+  <p class="lead">常小鹅是<b>「等级滚雪球 / 助力成长」型棋手</b>，<b>不占阵容位</b>。她不指定唯一主核，而是靠把等级源源不断地灌进你选定的核心，用<strong>等级总和</strong>触发「送福」滚雪球。</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <h4>🐇 技能 · 小菟助力</h4>
+      <div class="muted">使用技能，<b>随机</b>助力 1 名英雄，使其<b>等级 +2</b>。本场比赛中，小菟<b>每助力过 1 次，等级提升效果 +1</b>（越用越强，故要<b>早用、常用</b>，别囤着浪费）。</div>
+    </div>
+    <div class="card">
+      <h4>✨ 秘技 · 兔飞猛进</h4>
+      <div class="muted">己方英雄<b>等级总和</b>达到 <span class="kbd">50 / 150 / 375</span>（官网数值；部分攻略记为 50/175/400，以游戏内为准），各获得 1 张秘技牌<b>「小菟送福」</b>：对场上随机 4 名英雄各触发 1 次小菟助力（+2 级）。</div>
+    </div>
+    <div class="card">
+      <h4>🌙 专属 · 月之特调</h4>
+      <div class="muted">核心每提升 <b>5 级</b>，循环获得额外属性：<b>攻速 15% / 物法吸血 2% / 物法双防 2</b>；每通过助力提供 <b>65 级</b>，再获 1 张小菟送福。等级越高，属性与送福越滚越多。</div>
+    </div>
+    <div class="card">
+      <h4>🧭 核心思路</h4>
+      <ul class="clean muted">
+        <li><b>等级总和是核心指标</b>：围绕 50/150/375 三个送福节点规划。</li>
+        <li><b>集中不分散</b>：把助力尽量堆到少数核心；<b>别铺满人口</b>，多余棋子会稀释等级节奏。</li>
+        <li>助力随机 → <b>阵容搭配要灵活</b>，让"随便助力谁都不亏"。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 通用开局 -->
+<section id="open">
+  <h2><span class="n">02</span> 通用开局铁律（前 3 回合）</h2>
+  <p class="lead">无论走哪条起手，常小鹅的前期节奏高度一致：<b>攒能量、早助力、少刷新、苏烈顶血</b>。</p>
+  <table>
+    <thead><tr><th>回合</th><th>目标</th><th>关键操作</th></tr></thead>
+    <tbody>
+      <tr><td><span class="r">R1</span></td><td>攒能量</td><td>只买 1 张过渡英雄（<b>苏烈</b>最优，顶前排稳血），其余能量攒到 R2。</td></tr>
+      <tr><td><span class="r">R2</span></td><td>开启助力</td><td>棋手升 2 级，开始<b>小菟助力</b>；此后<b>每回合都用一次助力</b>（次数越多加成越高）。</td></tr>
+      <tr><td><span class="r">R3</span></td><td>零刷新找核心</td><td>棋手升 3 级；<b>7 回合前尽量零主动刷新</b>，只用免费刷新搜核心；<b>第 3 回合后首次拍卖</b>，抢起手核心 / 升星·升级增益牌。</td></tr>
+    </tbody>
+  </table>
+  <div class="callout gold">🔑 <b>三个拍卖节点</b>：第 <b>3 / 7 / 11</b> 回合后。首拍抢起手核心；二拍（R7 后）几乎都优先 <b>太乙真人</b>（保己方 C）；三拍（R11 后）按血量/等级补强或拿保命牌。二拍后通常<b>升 6 人口开始大搜</b>。</div>
+</section>
+
+<!-- 起手 A 狂铁 -->
+<section id="a">
+  <h2><span class="n">03</span> 起手 A：狂铁 → 远方 / 日落海「整备等级流」</h2>
+  <div class="op a">
+    <p class="lead">最稳的滚雪球路线：狂铁自带 <span class="tag t-zhengbei">整备</span>，配合常小鹅的助力/送福，等级<b>双重叠加</b>，全员越滚越高直至 999。</p>
+
+    <h3>衍生分支</h3>
+    <div class="branch">
+      <div class="src" style="border-left:4px solid var(--a)">狂铁 起手<br><span class="muted" style="font-weight:400;font-size:12px">+ 苏烈 = 远方羁绊</span></div>
+      <div class="arrows">
+        <div class="to"><b>远方整备流</b>：狂铁 + 苏烈 + 元芳 + 安琪拉 + 程咬金 / 朵莉亚</div>
+        <div class="to"><b>日落海整备流</b>：狂铁 → 亚连 → 安琪拉（法核）→ 朵莉亚 → 雅典娜 / 海诺 / 露娜（闭环，全员自动升级）</div>
+      </div>
+    </div>
+
+    <h3>关键英雄与词条</h3>
+    <div class="members">
+      <span class="m core">狂铁</span><span class="m">苏烈</span><span class="m">元芳</span>
+      <span class="m">安琪拉</span><span class="m">亚连</span><span class="m">朵莉亚</span>
+      <span class="m">雅典娜</span><span class="m">海诺</span><span class="m">露娜</span><span class="m">太乙真人</span>
+    </div>
+    <ul class="clean muted">
+      <li><b>狂铁</b> <span class="tag t-zhengbei">整备</span>「整备共鸣」：每回合开局给<b>已上阵</b>的日落海英雄临时 +级；技能双击挥砍两次普攻后对周围造成 50 固定伤害。<b>启动核心，优先觉醒</b>。</li>
+      <li><b>苏烈</b> <span class="tag t-xisheng">牺牲</span>：死后自身永久 +2 级，前排过渡兼吃等级。</li>
+      <li><b>亚连</b>「赤影整备」：场上仅 1 名日落海英雄装备时，全体友军 +2 临时级；常驻被动即可，觉醒优先级低于狂铁/安琪拉。</li>
+      <li><b>安琪拉</b>：法强核心，所有法术强度装备优先给她。</li>
+      <li><b>朵莉亚</b> <span class="tag t-dengchang">登场</span>：机制类似小乔，激活友军整备并叠额外等级。</li>
+      <li><b>露娜 / 雅典娜 / 海诺</b>：闭环三件套，集齐后统一觉醒养级。</li>
+    </ul>
+
+    <h3>逐回合运营</h3>
+    <table>
+      <thead><tr><th>回合</th><th>做什么</th></tr></thead>
+      <tbody>
+        <tr><td><span class="r">1–3</span></td><td>搜 <b>狂铁 / 苏烈</b>，尽快合成觉醒狂铁；每回合助力优先喂狂铁或后续核心；苏烈顶前排稳血。</td></tr>
+        <tr><td><span class="r">首拍(R3后)</span></td><td>优先 <b>升星 / 升级增益牌</b>，或抢核心日落海牌。</td></tr>
+        <tr><td><span class="r">4–7</span></td><td>狂铁 3 星，补 <b>安琪拉 / 元芳</b> 搭骨架；观察对手，决定是"有 1 张体系牌就升本"还是"刷新觉醒"。</td></tr>
+        <tr><td><span class="r">二拍(R7后)</span></td><td>优先 <b>太乙真人</b>；随后升 6 人口，凑齐日落海 6 张触发人口/秘技，开始大搜。</td></tr>
+        <tr><td><span class="r">8–14</span></td><td>补齐 <b>亚连 / 朵莉亚 / 雅典娜 / 海诺 / 露娜</b>，挂机升级；血健康拿<b>等级/经济天赋</b>，危险拿<b>战力天赋</b>直接打。</td></tr>
+        <tr><td><span class="r">决赛</span></td><td>按需上反制牌：<b>太乙</b>(复活自家 C)、<b>海月</b>(牵制敌 C)、<b>钟馗</b>(压敌主 C 等级)。对手有刺客给 C 名刀，有强控给净化/炽热。</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">⚠️ 整备只对<b>回合开始前已上阵且未被替换</b>的单位生效——<b>不要频繁替换核心棋子</b>，否则吃不到加成、成型变慢。</div>
+  </div>
+</section>
+
+<!-- 起手 B 苏烈 -->
+<section id="b">
+  <h2><span class="n">04</span> 起手 B：苏烈 → 嫦娥四人队（马超控制核心）</h2>
+  <div class="op b">
+    <p class="lead">苏烈是<b>万金油前排起手</b>（几乎所有阵容都能用它过渡）。常小鹅招牌是<b>嫦娥四人队</b>：以马超为绝对输出轴心，四核到位即成型，<b>不必凑满 5 人</b>。</p>
+
+    <h3>衍生分支</h3>
+    <div class="branch">
+      <div class="src" style="border-left:4px solid var(--b)">苏烈 起手<br><span class="muted" style="font-weight:400;font-size:12px">前排过渡·吃等级</span></div>
+      <div class="arrows">
+        <div class="to"><b>嫦娥四人队</b>：马超(主C) + 瑶 + 苏烈 + 吕布（+太乙 / 钟馗 / 海月）</div>
+        <div class="to"><b>马超控制流(扩展)</b>：刘禅 + 大乔 + 蔡文姬 + 马超 + 诸葛亮（控制链锁血）</div>
+      </div>
+    </div>
+
+    <h3>机制闭环：控制 → 增益 → 续航</h3>
+    <div class="members">
+      <span class="m core">马超</span><span class="m">瑶</span><span class="m">苏烈</span>
+      <span class="m">吕布</span><span class="m">太乙真人</span><span class="m">钟馗</span><span class="m">海月</span>
+    </div>
+    <ul class="clean muted">
+      <li><b>瑶</b>：达到 <b>40 级</b> 后普攻附带<b>硬控</b>，是控制链的开关。</li>
+      <li><b>马超</b>（主 C）<span class="tag t-kongzhi">控制联动</span>：己方<b>每触发一次控制</b> → +15 法力值 + 5% 暴击率，持续叠加，输出滚起来。</li>
+      <li><b>苏烈</b> <span class="tag t-xisheng">牺牲</span>：前期坦度过渡 + 吃等级。</li>
+      <li><b>吕布</b>：进一步强化马超的<b>吸血</b>续航。</li>
+      <li><b>常小鹅</b>：拉等级，且每 5 级随机赋予<b>吸血 / 攻速</b>，直接放大马超续航与输出。</li>
+    </ul>
+    <div class="callout">🧰 <b>出装</b>：马超 → 无尽 + 自然法杖 + 魔律之刃；瑶 → 近卫荣耀 + 破茧之衣；肉装给苏烈，多余给吕布。</div>
+
+    <h3>逐回合运营</h3>
+    <table>
+      <thead><tr><th>回合</th><th>做什么</th></tr></thead>
+      <tbody>
+        <tr><td><span class="r">1–3</span></td><td>只<b>单挂苏烈</b>顶血；每回合<b>用一次助力</b>（别浪费，影响后期金卡技能触发）。</td></tr>
+        <tr><td><span class="r">首拍(R3后)</span></td><td>留意 <b>马超、瑶</b> 的来牌，优先拿。</td></tr>
+        <tr><td><span class="r">R4</span></td><td>可上 <b>弈星</b> 帮助升级；天赋优先<b>经济类</b>，血量不健康则拿<b>回血天赋</b>。</td></tr>
+        <tr><td><span class="r">5–7</span></td><td>继续攒能量；<b>7 回合前只用免费刷新</b>找马超和瑶，别干扰拍卖预算。</td></tr>
+        <tr><td><span class="r">二拍(R7后)</span></td><td>优先 <b>太乙真人</b>；随后升 <b>6 人口</b> 大搜，合成马超 / 瑶三星，或拿升级效果牌喂常小鹅属性成长。</td></tr>
+        <tr><td><span class="r">8–14</span></td><td>四核（马超/瑶/苏烈/吕布）稳定在场；<b>太乙、钟馗、海月</b> 按对局保留补强；<b>别多凑人口</b>拖慢等级。</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">⚠️ 命脉是<b>控制链不断档</b>：瑶要尽快到 40 级，硬控触发才能喂马超法力与暴击；控制被<b>免疫/净化</b>时输出会明显掉档。</div>
+  </div>
+</section>
+
+<!-- 起手 C 干将 -->
+<section id="c">
+  <h2><span class="n">05</span> 起手 C：干将 → 法核 / 无限技能流（前期打工，后期转核）</h2>
+  <div class="op c">
+    <p class="lead">干将莫邪是<b>成长型远程法师</b>：<b>击败敌人永久 +级</b>，靠觉醒后不断击杀滚雪球。核心打法是<b>前期用干将叠等级压制，后期把等级「传承 / 遗志」转给更强法核</b>（诸葛亮 / 海月）。</p>
+
+    <h3>干将技能：雌雄双剑</h3>
+    <ul class="clean muted">
+      <li>释放 1 对飞剑，造成 <b>100 + 50% 法强</b> 伤害；<b>10 级</b>→150+100%；<b>40 级</b>→每第 2 次施法追加 1 对飞剑；<b>100 级</b>→150+200% 法强。</li>
+      <li>上场即解锁专属装备 <b>双剑·雄</b>；<span class="tag t-jisha">击杀叠级</span> 击败敌方永久 +级 → 越滚越强。</li>
+    </ul>
+
+    <h3>衍生分支</h3>
+    <div class="branch">
+      <div class="src" style="border-left:4px solid var(--c)">干将 起手<br><span class="muted" style="font-weight:400;font-size:12px">前期打工·叠等级</span></div>
+      <div class="arrows">
+        <div class="to"><b>常小鹅无限技能流</b>：常小鹅 + 干将 + <b>诸葛亮</b>——干将过渡叠级，<span class="tag t-chuancheng">传承</span>给诸葛亮，达成"一秒一个元气弹"高频伤害</div>
+        <div class="to"><b>阿离遗志干将</b>：前期干将/孙膑/曜/牛魔/猪八戒 → 后期换<b>海月/扁鹊/太乙</b>；圣杯/贤者天书天赋叠级转核</div>
+      </div>
+    </div>
+
+    <h3>关键英雄与词条</h3>
+    <div class="members">
+      <span class="m core">干将</span><span class="m core">诸葛亮</span><span class="m">苏烈</span>
+      <span class="m">孙膑</span><span class="m">海月</span><span class="m">扁鹊</span><span class="m">太乙真人</span><span class="m">钟馗</span>
+    </div>
+    <ul class="clean muted">
+      <li><b>干将</b> <span class="tag t-jisha">击杀叠级</span>：前期抢牌、一级觉醒，靠击杀堆等级、开局压制。</li>
+      <li><b>诸葛亮</b>（后期法核）：承接干将转移来的等级，高频元气弹爆发，补上"纯干将后期群伤不足"的短板。</li>
+      <li><b>传承 / 遗志</b> <span class="tag t-chuancheng">传承</span>：把干将的等级<b>转移</b>给高阶法核，转移后干将可卖出让位。</li>
+      <li><b>常小鹅</b>：助力堆干将快速觉醒滚雪球；后期送福同样能砸到诸葛亮法核上。</li>
+    </ul>
+
+    <h3>逐回合运营</h3>
+    <table>
+      <thead><tr><th>回合</th><th>做什么</th></tr></thead>
+      <tbody>
+        <tr><td><span class="r">1–3</span></td><td>抢 <b>干将</b>，一级<b>觉醒</b>；助力优先喂干将；苏烈顶前排。靠击杀开始叠级、争前期连胜。</td></tr>
+        <tr><td><span class="r">4–7</span></td><td>继续靠击杀叠级；<b>十张手牌存三级</b>囤组件；有体系牌就升本。</td></tr>
+        <tr><td><span class="r">二拍(R7后)</span></td><td>找 <b>五阶法核 / 诸葛亮</b> 组件，太乙真人保命。</td></tr>
+        <tr><td><span class="r">8–14</span></td><td>用<b>传承 / 遗志</b>把等级转给<b>诸葛亮</b>，干将转移后卖出让位；补 <b>太乙 / 海月 / 钟馗</b> 反制。</td></tr>
+      </tbody>
+    </table>
+    <div class="callout bad">⚠️ <b>纯干将后期群体输出不足、上限偏低</b>——必须<b>提前安排等级转移</b>到诸葛亮等法核，转核失败容易在终盘崩盘。</div>
+  </div>
+</section>
+
+<!-- 词条速查 -->
+<section id="kw">
+  <h2><span class="n">06</span> 词条与机制速查</h2>
+  <table>
+    <thead><tr><th>词条 / 机制</th><th>触发</th><th>代表</th><th>本文用途</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag t-zhengbei">整备</span></td><td>回合开始</td><td>狂铁「整备共鸣」、亚连「赤影整备」、朵莉亚</td><td>给<b>已上阵</b>单位临时 +级（新买未上阵不吃）→ 等级流地基</td></tr>
+      <tr><td><span class="tag t-xisheng">牺牲</span></td><td>阵亡时</td><td>苏烈：死后永久 +2 级</td><td>前排"越死越强"，三条起手通用过渡</td></tr>
+      <tr><td><span class="tag t-dengchang">登场</span></td><td>首次上场</td><td>朵莉亚 / 小乔；露娜登场触发两友军整备</td><td>瞬间批量拉级 / 爆发产出</td></tr>
+      <tr><td><span class="tag t-jisha">击杀叠级</span></td><td>击败敌人</td><td>干将莫邪</td><td>前期滚雪球压制</td></tr>
+      <tr><td><span class="tag t-chuancheng">传承 / 遗志</span></td><td>主动转移</td><td>干将 → 诸葛亮</td><td>把打工核心的等级转给终盘法核</td></tr>
+      <tr><td><span class="tag t-zhuli">助力 / 送福</span></td><td>棋手技能</td><td>常小鹅：小菟助力 / 小菟送福</td><td>随机 +级、递增；等级总和 50/150/375 触发送福</td></tr>
+      <tr><td><span class="tag t-kongzhi">控制联动</span></td><td>控制命中</td><td>瑶(40级硬控)、马超(每次控制 +法力+暴击)</td><td>控制流的增益引擎</td></tr>
+      <tr><td><span class="tag t-guobi">古币</span></td><td>河洛资源</td><td>程咬金/婉儿产币、木兰 4 币 1 复活</td><td>对照体系（克制分析用）</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 特点 优缺点 克制 -->
+<section id="compare">
+  <h2><span class="n">07</span> 三套阵容：特点 · 优缺点 · 克制</h2>
+  <p class="lead">下表横向对比三条起手衍生体系（外加高热度的<b>复活木兰</b>作为克制参照）。</p>
+  <table>
+    <thead><tr>
+      <th>体系</th><th>定位/特点</th><th>核心机制</th><th class="win">克制（打得过）</th><th class="lose">被克制（怕）</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><b>狂铁·整备等级流</b><br><span class="muted">远方/日落海</span></td>
+        <td>成长稳定、操作简单、后期等级压制强、容错高、全分段通用</td>
+        <td>每回合整备 + 常小鹅助力/送福，等级双叠滚雪球</td>
+        <td class="win">普通单核养成、慢速发育阵容；后期等级碾压</td>
+        <td class="lose">前期快攻爆发、<b>强控/高频眩晕</b>；被 ban 日落海(露娜)受损；核心被频繁替换则成型慢</td>
+      </tr>
+      <tr>
+        <td><b>嫦娥四人队</b><br><span class="muted">马超控制核心</span></td>
+        <td>控制—增益—续航闭环，中前期锁血强，节奏可控、容错高</td>
+        <td>瑶硬控 → 马超每控 +法力+暴击 → 持续输出；常小鹅拉级放大续航</td>
+        <td class="win">依赖施法/单核爆发、脆皮后排；靠锁血抓单压制</td>
+        <td class="lose">后期上限/瞬爆略低；<b>抗控/净化/解控</b>阵容；控制链断档、瑶未到 40 级时乏力</td>
+      </tr>
+      <tr>
+        <td><b>干将·法核/无限技能</b><br><span class="muted">前打工后转核</span></td>
+        <td>前期压制突出、开局强、入门门槛低；后期需转核提升上限</td>
+        <td>觉醒+击杀叠级滚雪球 → 传承/遗志转诸葛亮高频爆发</td>
+        <td class="win">慢热/前期弱势阵容；圣杯天赋下前期连胜起势</td>
+        <td class="lose">纯干将终盘群伤不足；<b>钟馗</b>压等级、强前排肉阵、持续控制；转核失败易崩</td>
+      </tr>
+      <tr>
+        <td><b>复活花木兰</b><br><span class="muted">河洛（参照）</span></td>
+        <td>容错极高，反复站起来输出，成型后打大部分主流</td>
+        <td>古币=复活，露娜爆发开关；钟馗压敌主 C</td>
+        <td class="win">普通单核养成、常规爆发流</td>
+        <td class="lose">持续控制/高频眩晕；被 ban 日落海(露娜)；吃觉醒婉儿</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>每套一句话总结</h3>
+  <div class="grid g3">
+    <div class="card op a" style="border-left:4px solid var(--a)">
+      <h4 style="color:var(--a)">狂铁·整备等级流</h4>
+      <div class="pm">
+        <div class="pros"><h4>优点</h4><ul class="clean"><li>滚雪球稳、平滑</li><li>后期 999 等级/武器碾压</li><li>容错高、无脑上分</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul class="clean"><li>前期战力弱、成型慢</li><li>怕强控与快攻</li><li>依赖驻场、怕 ban 日落海</li></ul></div>
+      </div>
+    </div>
+    <div class="card op b" style="border-left:4px solid var(--b)">
+      <h4 style="color:var(--b)">嫦娥四人队</h4>
+      <div class="pm">
+        <div class="pros"><h4>优点</h4><ul class="clean"><li>中前期锁血强、抓单</li><li>节奏可控、容错高</li><li>四核即成型、省人口</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul class="clean"><li>后期瞬爆上限略低</li><li>怕抗控/净化</li><li>控制断档即乏力</li></ul></div>
+      </div>
+    </div>
+    <div class="card op c" style="border-left:4px solid var(--c)">
+      <h4 style="color:var(--c)">干将·法核流</h4>
+      <div class="pm">
+        <div class="pros"><h4>优点</h4><ul class="clean"><li>开局压制、连胜起势</li><li>转诸葛亮上限高</li><li>门槛低、圣杯加成大</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul class="clean"><li>纯干将终盘乏力</li><li>吃觉醒与转核操作</li><li>怕钟馗/肉阵/控制</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>克制关系（速记）</h3>
+  <div class="callout gold">
+    🔁 <b>三角克制</b>：<span style="color:var(--a)">整备等级流</span> 压制 <b>慢速单核</b>，但怕 <span style="color:var(--b)">控制流</span>；
+    <span style="color:var(--b)">控制流</span> 锁死 <b>施法/爆发脆皮</b>，但怕 <b>抗控 &amp; 高成长等级流</b>后期反打；
+    <span style="color:var(--c)">干将法核</span> 前期压制 <b>慢热阵容</b>，但怕 <b>钟馗压等级 &amp; 强前排</b>。
+  </div>
+  <div class="grid g2">
+    <div class="card"><h4>🛡️ 万能克制手：钟馗</h4><div class="muted">压低敌方<b>最强主 C</b> 等级，是所有"养大哥/等级流单核"阵容的通用克星，逆风翻盘位。三套阵容决赛都可按需补入。</div></div>
+    <div class="card"><h4>🗡️ 关键反制装备</h4><div class="muted">对手<b>强控</b> → 净化/炽热支配者/纯净苍穹；对手<b>刺客</b> → 名刀·司命；遇<b>闪现</b>阵容 → 前后排交换站位；遇钟馗/太乙/图腾 → C 位别放最角落，往前放。</div></div>
+  </div>
+</section>
+
+<!-- 来源 -->
+<section id="src">
+  <h2><span class="n">08</span> 数据来源与免责声明</h2>
+  <p class="muted">二次整理，用于理解常小鹅体系与运营框架。词条/数值/强度随版本变化，请以正式服与游戏内「灵宝」推荐为准。整理时间：2026-09。</p>
+  <div class="src">
+    <a href="https://wxq.qq.com/" target="_blank" rel="noopener">腾讯 · 王者万象棋官网（棋手技能/秘技数值）</a>
+    <a href="https://www.18183.com/gonglue/202608/1m9k6nge.html" target="_blank" rel="noopener">18183 · 常小娥运营思路</a>
+    <a href="https://www.jiaoyimao.com/news/357826.html" target="_blank" rel="noopener">交易猫 · 嫦娥四人队（马超核心）阵容搭配</a>
+    <a href="https://www.233leyuan.com/post-detail/2097616100144803840" target="_blank" rel="noopener">233乐园 · 嫦娥四人队马超核心实战思路</a>
+    <a href="https://www.jiaoyimao.com/news/358980.html" target="_blank" rel="noopener">交易猫 · 干将玩法与阵容搭配详解</a>
+    <a href="https://m-ali.gamer.dog/news/gl2608/1803987.html" target="_blank" rel="noopener">游侠手游 · 干将技能介绍</a>
+    <a href="https://www.jiaoyimao.com/news/340162.html" target="_blank" rel="noopener">交易猫 · 日落海整备流搭配与运营</a>
+    <a href="https://www.iyingdi.com/tz/post/5647625" target="_blank" rel="noopener">旅法师营地 · 日落海整备流（全员 999）</a>
+    <a href="https://www.233leyuan.com/post-detail/2095151530883796992" target="_blank" rel="noopener">233乐园 · 三分控制流阵容详解</a>
+    <a href="https://www.youxiabc.com/p/60386.html" target="_blank" rel="noopener">ABC游戏网 · 河洛花木兰无限复活流（克制参照）</a>
+  </div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  常小鹅起手分支与阵容运营详解 ｜ 非官方玩家攻略整理，与腾讯/游戏官方无隶属关系。祝上分顺利。
+</footer>
+
+<button class="totop" id="totop" title="回到顶部">↑ 顶部</button>
+
+<script>
+  const links=[...document.querySelectorAll('nav.tabs a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const totop=document.getElementById('totop');
+  function onScroll(){
+    const y=window.scrollY+120; let idx=0;
+    secs.forEach((s,i)=>{ if(s && s.offsetTop<=y) idx=i; });
+    links.forEach((a,i)=>a.classList.toggle('active', i===idx));
+    totop.style.display=window.scrollY>500?'block':'none';
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  totop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+</script>
+</body>
+</html>
