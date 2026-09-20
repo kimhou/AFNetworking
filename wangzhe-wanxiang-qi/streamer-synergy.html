@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="data:," />
+<title>王者万象棋 · 主播主流阵容 · 词条联动增益详解</title>
+<style>
+  :root{
+    --bg:#0e1020; --bg2:#151934; --card:#1b2044; --card2:#232a54;
+    --line:#2c3466; --text:#eef1ff; --muted:#a7b0e0; --gold:#ffce6a; --gold2:#f5b942;
+    --ok:#5ad19a; --warn:#ffb35a; --bad:#ff6b81; --blue:#5aa2ff; --purple:#a97bff;
+    --hlk:#ff8a5c; --air:#7db4ff; --sea:#37d3c4; --sac:#c79bff; --lv:#ffce6a;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:72px}
+  body{margin:0; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%, #241a4d, transparent),
+      radial-gradient(1000px 500px at 0% 0%, #10233f, transparent), var(--bg);
+    color:var(--text); line-height:1.75;}
+  a{color:var(--gold)}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 20px}
+
+  header.hero{padding:42px 20px 24px; text-align:center; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(40,30,80,.5), transparent);}
+  header.hero h1{margin:0; font-size:30px; letter-spacing:1px;
+    background:linear-gradient(90deg,#ffe4a3,#ffce6a,#f5b942);
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
+  header.hero .sub{color:var(--muted); margin-top:8px; font-size:15px}
+  header .crumbs{margin-top:10px; font-size:13px}
+
+  .notice{max-width:1120px; margin:16px auto 0; padding:12px 16px; font-size:13px; color:#ffe6b8;
+    background:rgba(245,185,66,.10); border:1px solid rgba(245,185,66,.35); border-radius:10px;}
+  .notice.fix{color:#cfe0ff; background:rgba(90,162,255,.10); border-color:rgba(90,162,255,.4)}
+
+  nav.tabs{position:sticky; top:0; z-index:20; background:rgba(14,16,32,.92);
+    backdrop-filter:blur(8px); border-bottom:1px solid var(--line);}
+  nav.tabs .wrap{display:flex; gap:6px; flex-wrap:wrap; padding:10px 20px}
+  nav.tabs a{color:var(--muted); text-decoration:none; font-size:14px; padding:7px 12px;
+    border-radius:8px; border:1px solid transparent}
+  nav.tabs a:hover{color:var(--text); background:var(--card)}
+  nav.tabs a.active{color:#1a1230; background:var(--gold); border-color:var(--gold); font-weight:700}
+
+  section{padding:36px 0 10px; border-bottom:1px dashed #232a54}
+  h2{font-size:23px; margin:0 0 6px; display:flex; align-items:center; gap:10px}
+  h2 .n{font-size:14px; color:#1a1230; background:var(--gold); border-radius:6px; padding:2px 8px}
+  h3{font-size:17px; margin:20px 0 8px; color:var(--gold)}
+  .lead{color:var(--muted); margin:4px 0 14px}
+
+  .grid{display:grid; gap:14px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:860px){.g3,.g2{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line);
+    border-radius:14px; padding:16px 18px}
+  .card h4{margin:0 0 6px; font-size:16px}
+  .muted{color:var(--muted)} .k{color:var(--gold); font-weight:700}
+
+  table{width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; border-radius:12px; overflow:hidden}
+  th,td{padding:9px 11px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  thead th{background:var(--card2); color:var(--gold); font-weight:700}
+  tbody tr:hover{background:rgba(90,162,255,.06)}
+
+  .members{margin:6px 0}
+  .m{display:inline-block; font-size:13px; padding:3px 9px; margin:3px 4px 0 0; border:1px solid var(--line); border-radius:8px; background:#12162f}
+  .m.core{background:rgba(245,185,66,.15); border-color:var(--gold); color:var(--gold); font-weight:700}
+
+  /* 词条联动链 */
+  .chain{display:flex; flex-wrap:wrap; align-items:stretch; gap:6px; margin:12px 0}
+  .node{background:linear-gradient(180deg,#202650,#171b3a); border:1px solid var(--line);
+    border-left:4px solid var(--gold); border-radius:10px; padding:8px 12px; min-width:120px}
+  .node b{display:block; font-size:14px} .node small{color:var(--muted); font-size:12px}
+  .node.hot{border-left-color:var(--bad)} .node.lv{border-left-color:var(--lv)}
+  .arw{display:flex; align-items:center; color:var(--gold); font-weight:900; font-size:18px; padding:0 2px}
+
+  .tag{font-size:12px; font-weight:700; padding:2px 8px; border-radius:6px; color:#12142c; white-space:nowrap}
+  .t-zhuli{background:#ffce6a} .t-zhengbei{background:#5ad1a0} .t-jicheng{background:#7db4ff}
+  .t-xisheng{background:#ff9a6b} .t-fengxian{background:#c79bff} .t-guhua{background:#8ad0ff}
+  .t-wuzhen{background:#f2c14e} .t-huanjing{background:#ff7a90}
+
+  .callout{background:rgba(90,162,255,.08); border-left:3px solid var(--blue); padding:10px 14px;
+    border-radius:0 10px 10px 0; margin:10px 0}
+  .callout.gold{background:rgba(245,185,66,.08); border-color:var(--gold)}
+  .callout.warn{background:rgba(255,179,90,.08); border-color:var(--warn)}
+  .callout.bad{background:rgba(255,107,129,.08); border-color:var(--bad)}
+  ul.clean{margin:6px 0; padding-left:20px} ul.clean li{margin:4px 0}
+
+  .comp{border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:12px 0;
+    background:linear-gradient(180deg,var(--card),var(--bg2))}
+  .comp .title{font-size:19px; font-weight:800; margin:0 0 4px}
+  .comp .meta{font-size:13px; color:var(--muted); margin-bottom:6px}
+  .comp .meta b{color:var(--text)}
+
+  .kbd{font-size:12px; background:#12162f; border:1px solid var(--line); border-radius:6px; padding:1px 7px}
+  footer{padding:28px 0 60px; color:var(--muted); font-size:13px}
+  .src a{display:block; margin:3px 0}
+  .totop{position:fixed; right:18px; bottom:18px; background:var(--gold); color:#1a1230; font-weight:800;
+    border:none; border-radius:10px; padding:10px 14px; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.4); display:none}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>主播主流阵容 · 词条联动增益详解</h1>
+    <div class="sub">王者万象棋 ｜ 海陆空 · 艾琳冰冻 · 李信小鹿献祭 · 姜子牙 · 海月 —— 重点讲清楚「词条之间怎么配合增益」</div>
+    <div class="crumbs muted">配套：<a href="index.html">《玩法与上分总览》</a> · <a href="changxiaoe-openings.html">《常小鹅起手分支》</a></div>
+  </div>
+</header>
+
+<div class="notice fix">
+  🔧 <b>先纠正一处</b>：主播主流的<strong>常小鹅（=游戏内「常小娥」）</strong>体系是 <b>海陆空（司空震主C）</b> 与 <b>艾琳冰冻风筝流</b>；此前给的「马超四人队」虽是真实常小娥阵容，但并非主播主打，已在本页对齐。另：<b>李信小鹿献祭流</b>的棋手其实是<strong>「瑶妹」</strong>（小鹿机制），<b>姜子牙 / 海月</b> 则是<strong>无阵营通用战略卡</strong>，可插入多套体系当"引擎 / 反制"。
+</div>
+<div class="notice">
+  ⏱️ <b>数据时效</b>：综合 2026-08 体验服与 09 公测 S1 主播 / 攻略整理。版本更新快，词条 / 数值以正式服与游戏内「灵宝」为准；个别节点各攻略数值有出入，已标注。
+</div>
+
+<nav class="tabs">
+  <div class="wrap">
+    <a href="#map">① 阵容·棋手·主C 速览</a>
+    <a href="#kw">② 关键词条总表</a>
+    <a href="#hlk">③ 海陆空(司空震)</a>
+    <a href="#ailin">④ 艾琳冰冻流</a>
+    <a href="#lixin">⑤ 李信小鹿献祭</a>
+    <a href="#jzy">⑥ 姜子牙引擎</a>
+    <a href="#haiyue">⑦ 海月反制</a>
+    <a href="#engine">⑧ 词条增益引擎总结</a>
+    <a href="#src">⑨ 来源</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- 速览 -->
+<section id="map">
+  <h2><span class="n">01</span> 阵容 · 棋手 · 主C 速览</h2>
+  <p class="lead">先把"谁是棋手、谁是主C、靠什么赢"对齐清楚，避免张冠李戴。</p>
+  <table>
+    <thead><tr><th>阵容</th><th>棋手</th><th>主C</th><th>取胜内核（一句话）</th></tr></thead>
+    <tbody>
+      <tr><td><b>海陆空</b></td><td>常小娥</td><td>司空震</td><td>助力灌级 → 老虎吸取中转 → 司空震<b>继承临时等级</b>，滚成 999 空爆</td></tr>
+      <tr><td><b>艾琳冰冻风筝流</b></td><td>常小娥</td><td>艾琳</td><td>助力集中养艾琳 → 满攻速 + 冰矛减速 + <b>全图飞行风筝</b></td></tr>
+      <tr><td><b>李信小鹿献祭流</b></td><td><b>瑶妹</b></td><td>李信</td><td>小鹿连胜堆级 → 前排牺牲 →「奉献」把等级灌给李信 → <b>明世隐固化</b>成 999 复活暴击</td></tr>
+      <tr><td><b>姜子牙多阵营流</b></td><td>百搭（马可/常小娥等）</td><td>姜子牙/司空震/马超</td><td>无阵营卡，<b>打多阵营牌全队升级</b>，当等级引擎</td></tr>
+      <tr><td><b>海月（战术卡）</b></td><td>百搭</td><td>—（反制/挂件）</td><td>队友阵亡触发<b>幻境</b>，拉走敌方最高等级核心对等交换</td></tr>
+    </tbody>
+  </table>
+  <div class="callout gold">🧩 关键认知：万象棋<b>不靠固定羁绊，而靠"词条效果链"</b>。同一张卡（如司空震、海月、姜子牙）能插进不同体系，取决于它的<b>词条</b>能不能和你的"等级引擎"接上。下面逐套拆解词条如何咬合增益。</div>
+</section>
+
+<!-- 词条总表 -->
+<section id="kw">
+  <h2><span class="n">02</span> 关键词条总表（本页会反复用到）</h2>
+  <table>
+    <thead><tr><th>词条 / 机制</th><th>代表卡</th><th>作用</th><th>为什么能"增益联动"</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tag t-zhuli">助力 / 送福</span></td><td>常小娥（棋手）</td><td>蓝兔=随机 +2 级（递增）；金兔=等级总和达标后随机 4 名各再助力</td><td>体系的<b>等级来源总阀门</b>，把等级源源不断注入主C</td></tr>
+      <tr><td><span class="tag t-zhengbei">整备</span></td><td>狂铁、老虎（裴擒虎）</td><td>回合开始给<b>已上阵</b>单位临时 +级</td><td>产出"临时等级"，供吸取 / 继承 / 固化再利用</td></tr>
+      <tr><td><span class="tag t-jicheng">吸取 / 继承</span></td><td>裴擒虎 → 司空震</td><td>老虎吸相邻友军临时等级；司空震<b>继承</b>老虎的临时等级</td><td>双层传递，把全队等级"汇流"到司空震一人</td></tr>
+      <tr><td><span class="tag t-xisheng">牺牲</span></td><td>苏烈、铠、花木兰、钟馗(挂词条)</td><td>阵亡时给指定/全队 +级（多为临时）</td><td>把"前排送死"变成给主C喂等级</td></tr>
+      <tr><td><span class="tag t-fengxian">奉献（小鹿）</span></td><td>瑶妹·神奇小鹿</td><td>小鹿阵亡把自身（连胜堆起的）等级均分给全队</td><td>连胜雪球 → 一次性倾泻给李信</td></tr>
+      <tr><td><span class="tag t-guhua">临时→永久（固化）</span></td><td>明世隐</td><td>把"临时等级"转成<b>永久等级</b></td><td><b>牺牲/奉献/整备</b>体系的命脉：不固化，战斗结束就清零</td></tr>
+      <tr><td><span class="tag t-wuzhen">无阵营升级</span></td><td>姜子牙</td><td>打出"不在场/无阵营"牌 → 自己+随机3名不同阵营 +1（学习后+2）</td><td>阵营越杂、出牌越勤，全队升级越快</td></tr>
+      <tr><td><span class="tag t-huanjing">幻境反制</span></td><td>海月</td><td>友军阵亡 → 拉走敌方最高等级单位 + 真实伤害</td><td>专治"养大哥单核"，把对面 999 主C直接带走</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 海陆空 -->
+<section id="hlk">
+  <h2><span class="n">03</span> 海陆空（常小娥 · 司空震主C）</h2>
+  <div class="comp">
+    <div class="title">🌊🏔️✈️ 海陆空 <span class="muted" style="font-size:14px">— 招牌无脑滚雪球</span></div>
+    <div class="meta">棋手：<b>常小娥</b> ｜ 主C：<b>司空震</b> ｜ 核心：苏烈(陆) · 司空震(空) · 海月(海) · 裴擒虎(中转)</div>
+    <div class="members">
+      <span class="m">苏烈</span><span class="m">裴擒虎(老虎)</span><span class="m core">司空震</span><span class="m">海月</span><span class="m">露娜</span>
+    </div>
+
+    <h3>词条联动链（核心）</h3>
+    <div class="chain">
+      <span class="node lv"><b>常小娥·助力/送福</b><small>灌"等级"给全队</small></span><span class="arw">→</span>
+      <span class="node"><b>裴擒虎·吸取</b><small>吸相邻友军<br>临时等级</small></span><span class="arw">→</span>
+      <span class="node"><b>司空震·继承</b><small>继承老虎的<br>临时等级</small></span><span class="arw">→</span>
+      <span class="node"><b>露娜/全军动员</b><small>再触发老虎整备<br>二次吸取</small></span><span class="arw">→</span>
+      <span class="node hot"><b>觉醒质变</b><small>10/40/100 级<br>司空震 999 爆发</small></span>
+    </div>
+
+    <h3>逐条词条怎么增益</h3>
+    <ul class="clean muted">
+      <li><b>常小娥</b> <span class="tag t-zhuli">助力/送福</span>：等级总阀门。蓝兔随机 +2（越用加成越高），等级总和达 <span class="kbd">50/150/375</span> 触发金兔（随机 4 名各再助力）。<b>每回合必用</b>。</li>
+      <li><b>裴擒虎（老虎）</b> <span class="tag t-jicheng">吸取</span>：把队友身上（含常小娥灌的）<b>临时等级</b>吸到自己身上，做"中转管道"。</li>
+      <li><b>司空震</b> <span class="tag t-jicheng">继承</span>：<b>继承老虎多出的临时等级</b> → 实际等级远超面板，双层叠加冲 999。</li>
+      <li><b>露娜 / 全军动员</b>：<b>再次触发老虎整备</b>，让"吸取→继承"再走一轮，把临时等级最大化。</li>
+      <li><b>苏烈</b> <span class="tag t-xisheng">牺牲</span>：前排承压过渡，靠常小娥助力维持高等级。</li>
+      <li><b>海月</b> <span class="tag t-huanjing">幻境</span>：决赛反制，防止被对面更高的单核压过。</li>
+    </ul>
+
+    <h3>运营与出装</h3>
+    <table>
+      <thead><tr><th>回合</th><th>做什么</th></tr></thead>
+      <tbody>
+        <tr><td class="k">1–3</td><td>只单挂<b>苏烈</b>，每回合用蓝兔；留 1 张<b>弈星</b>到首拍后再用。</td></tr>
+        <tr><td class="k">首拍</td><td>优先抢<b>裴擒虎</b>；没有就普通牌过渡。R4 上弈星升级后卖掉换钱，天赋拿<b>金币类</b>冲 5 级。</td></tr>
+        <tr><td class="k">二拍～8</td><td>重点抢<b>司空震、海月</b>；升 6 级凑四核，<b>一次性倾泻</b>攒下的蓝兔+金兔，司空震等级瞬间暴涨。</td></tr>
+        <tr><td class="k">后期</td><td>刷新把司空震、海月<b>觉醒</b>；老虎吸取不足时用露娜/全军动员补触发。三拍拿<b>天籁琴音、神兵天剑</b>。</td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn">⚠️ <b>司空震全池仅 6 张，一局只有 1 人能觉醒</b>——要早升本抢卡；长时间刷不到司空震这套会很难受。</div>
+    <div class="callout">🧰 出装：司空震=<b>金色圣剑</b>(必备)+影刃+免控；老虎=影刃+无尽战刃+名刀；苏烈全肉；多余法系装给海月。</div>
+  </div>
+</section>
+
+<!-- 艾琳 -->
+<section id="ailin">
+  <h2><span class="n">04</span> 艾琳冰冻风筝流（常小娥 · 艾琳主C）</h2>
+  <div class="comp">
+    <div class="title">❄️ 艾琳四人流 <span class="muted" style="font-size:14px">— 满攻速 + 全图飞行风筝</span></div>
+    <div class="meta">棋手：<b>常小娥</b> ｜ 主C：<b>艾琳</b> ｜ 四人：艾琳 · 狂铁 · 海月 · 瑶</div>
+    <div class="members">
+      <span class="m core">艾琳</span><span class="m">狂铁</span><span class="m">海月</span><span class="m">瑶</span>
+    </div>
+
+    <h3>词条联动链</h3>
+    <div class="chain">
+      <span class="node"><b>狂铁·整备</b><small>前期把等级<br>集中顶在狂铁</small></span><span class="arw">→</span>
+      <span class="node lv"><b>常小娥·助力/送福</b><small>升六后集中<br>转养艾琳</small></span><span class="arw">→</span>
+      <span class="node"><b>月之特调</b><small>每5级+攻速/<br>双吸血/双防</small></span><span class="arw">→</span>
+      <span class="node hot"><b>艾琳成型</b><small>满攻速+冰矛减速<br>100级全图飞行风筝</small></span>
+    </div>
+
+    <h3>逐条词条怎么增益</h3>
+    <ul class="clean muted">
+      <li><b>狂铁</b> <span class="tag t-zhengbei">整备</span>：前期过渡核心，把等级先顶在自己身上稳住血线，成型后再把助力转给艾琳。</li>
+      <li><b>常小娥</b> <span class="tag t-zhuli">助力/送福</span>：<b>集中养艾琳</b>。前期少上人，等级不分散；四人成型后四人都能吃金兔（补第五人会稀释金兔受益）。<b>同回合先金兔后蓝兔</b>。</li>
+      <li><b>月之特调</b>（升 6 拿到）：常小娥每提供 5 级，随机给<b>攻速 / 双吸血 / 双防</b>，直接放大艾琳的攻速与续航。</li>
+      <li><b>瑶</b>：提供<b>护盾</b>与辅助增益；<b>海月</b>：补前排战力/控场，替艾琳接敌。</li>
+      <li><b>艾琳</b>（主C）：靠<b>寒霜侵袭（冰矛）</b>减速创造输出窗口，高等级满 4.0 攻速，100 级解锁<b>全图飞行</b>沿边风筝近战。</li>
+    </ul>
+    <div class="callout gold">🧰 艾琳三件套：<b>寒霜侵袭</b>(减速) · <b>炽热支配者</b>(护盾+免控保命) · <b>破晓</b>(高攻速持续削防)。天赋升六优先<b>月之特调</b>。</div>
+    <div class="callout warn">⚠️ 对<b>李信</b>：别让艾琳开局被贴脸；对<b>复活木兰</b>：她复活后要继续保持风筝输出。艾琳流本身就是版本里<b>风筝克制近战/单核</b>的黑科技。</div>
+  </div>
+</section>
+
+<!-- 李信 -->
+<section id="lixin">
+  <h2><span class="n">05</span> 李信小鹿献祭流（瑶妹 · 李信主C）</h2>
+  <div class="comp">
+    <div class="title">🦌 小鹿献祭·李信 999 <span class="muted" style="font-size:14px">— 轮椅牺牲流，T0 上分</span></div>
+    <div class="meta">棋手：<b>瑶妹</b>（不是常小娥！）｜ 主C：<b>李信</b> ｜ 命脉卡：<b>明世隐</b></div>
+    <div class="members">
+      <span class="m core">李信</span><span class="m" style="border-color:#8ad0ff;color:#8ad0ff">明世隐</span><span class="m">铠</span>
+      <span class="m">钟馗</span><span class="m">程咬金</span><span class="m">太乙真人</span><span class="m">花木兰</span>
+    </div>
+
+    <h3>词条联动链（这套最能体现"词条配合"）</h3>
+    <div class="chain">
+      <span class="node"><b>瑶妹·小鹿</b><small>每回合+级<br>连胜额外+级</small></span><span class="arw">→</span>
+      <span class="node"><b>前排·牺牲</b><small>铠/花木兰/钟馗挂词条<br>阵亡灌临时等级</small></span><span class="arw">→</span>
+      <span class="node hot"><b>小鹿·奉献</b><small>小鹿阵亡把等级<br>均分/倾泻给李信</small></span><span class="arw">→</span>
+      <span class="node lv"><b>明世隐·固化</b><small>临时等级<br>→ 永久等级</small></span><span class="arw">→</span>
+      <span class="node hot"><b>李信 999</b><small>自带复活<br>满屏暴击清场</small></span>
+    </div>
+
+    <h3>逐条词条怎么增益</h3>
+    <ul class="clean muted">
+      <li><b>瑶妹·小鹿</b> <span class="tag t-fengxian">奉献</span>：开局召唤小鹿，<b>每回合+级、上回合胜利再+1</b>（连胜滚雪球）；12 回合后解锁<b>奉献</b>——小鹿阵亡把积累的等级<b>倾泻给全队</b>（目标：让李信独吃）。天赋<b>巨型玩偶</b>直接给小鹿 +30 级并挂"庇护"(30% 伤害转小鹿)。</li>
+      <li><b>牺牲前排</b>（铠 / 花木兰）<span class="tag t-xisheng">牺牲</span>：阵亡给李信喂临时等级；<b>钟馗</b>可给英雄<b>挂上牺牲词条</b>，加速叠等级；<b>太乙真人</b>复活让牺牲效果<b>多次触发</b>。</li>
+      <li><b>明世隐</b> <span class="tag t-guhua">固化</span>：<b>第二关键卡</b>！把小鹿奉献 / 牺牲给的<b>临时等级转成永久等级</b>——没有它，战斗一结束等级清零，这套就玩不了 999。</li>
+      <li><b>李信</b>（主C）：<b>自带复活</b>，被海月拉走秒也能起身，复活后攻速/移速大增，高等级满屏暴击。</li>
+    </ul>
+    <table>
+      <thead><tr><th>回合</th><th>做什么</th></tr></thead>
+      <tbody>
+        <tr><td class="k">1–3</td><td>牛魔+李元芳+苏烈+弈星<b>打连胜</b>养小鹿；小鹿放前排吃伤害；每 3 回合开小鹿秘技；<b>存钱冲棋手 4 级</b>。首拍优先<b>明世隐</b>，其次铠/钟馗。</td></tr>
+        <tr><td class="k">4–8</td><td>棋手 4 级<b>搜李信</b>，上场挂明世隐，补太乙/钟馗/铠；打工卡逐步下场。二拍补花木兰/婉儿，李信没满级就先拿李信本体。</td></tr>
+        <tr><td class="k">12+</td><td>拉棋手等级拿<b>奉献</b>；<b>工具人全前排先送死，小鹿倒数几个死</b>，让等级尽量全给李信；李信站后排角落防秒。</td></tr>
+      </tbody>
+    </table>
+    <div class="callout gold">🧰 李信毕业：<b>无尽 · 影牙 · 魂祭绝刃</b>；天赋首选<b>献祭之刺（魂祭绝刃）</b>。小鹿天赋优先<b>奉献 &gt; 共鸣 &gt; 双生</b>。</div>
+  </div>
+</section>
+
+<!-- 姜子牙 -->
+<section id="jzy">
+  <h2><span class="n">06</span> 姜子牙：无阵营「等级引擎」（可插多套）</h2>
+  <div class="comp">
+    <div class="meta">定位：无阵营 5 费法师 · <b>多阵营体系的等级支点</b></div>
+    <h3>词条机制</h3>
+    <ul class="clean muted">
+      <li><span class="tag t-wuzhen">无阵营升级</span> 被动：每打出<b>「不在场阵营 / 无阵营」</b>英雄牌 → 姜子牙 <b>+ 随机 3 名不同阵营英雄各 +1 级</b>（学习后升为 <b>+2</b>）。</li>
+      <li>大招<b>天人法则</b>：蓄力冲击波、施法<b>免控</b>；40 级追加两道并压制 50% 回血；100 级<b>全屏</b>释放。</li>
+    </ul>
+    <h3>怎么和别的词条配合增益</h3>
+    <div class="chain">
+      <span class="node"><b>姬小满·刷牌/卖牌</b><small>高频出不同<br>阵营牌</small></span><span class="arw">→</span>
+      <span class="node lv"><b>姜子牙被动</b><small>每出牌全队<br>+1/+2 级</small></span><span class="arw">→</span>
+      <span class="node"><b>老虎整备</b><small>产临时等级</small></span><span class="arw">→</span>
+      <span class="node hot"><b>司空震继承</b><small>连锁等级爆发</small></span>
+    </div>
+    <ul class="clean muted">
+      <li><b>与海陆空/司空震</b>：姜子牙负责"<b>全队普涨等级</b>"，老虎+司空震负责"<b>把等级汇流到空爆主C</b>"，两条引擎叠加，等级爆发上限极高。</li>
+      <li><b>与马瑶</b>：姜子牙+瑶+马超+姬小满，马超控制输出，全员高等级、容错高。</li>
+      <li>要点：<b>场上尽量保留多种阵营</b>、低费废卡刷出来短暂上场再卖，专门"喂"姜子牙被动的触发条件。</li>
+    </ul>
+    <div class="callout">🧰 姜子牙出装：<b>魔律之刃 · 虚无法杖 · 贤者之书</b>。约 6 回合升 5 人口再找姜子牙，之前先囤各阵营低费牌做触发储备。</div>
+  </div>
+</section>
+
+<!-- 海月 -->
+<section id="haiyue">
+  <h2><span class="n">07</span> 海月：无阵营「幻境反制」（决赛破局）</h2>
+  <div class="comp">
+    <div class="meta">定位：无阵营 5 阶战术卡 · <b>专克养大哥单核</b></div>
+    <h3>词条机制</h3>
+    <ul class="clean muted">
+      <li><span class="tag t-huanjing">幻境（牺牲）</span>：<b>己方英雄阵亡</b>时触发「水月幻境」，把<b>敌方当前等级最高</b>的单位拉入幻境，并附加相当于<b>海月生命值%</b>的<b>真实伤害</b>。</li>
+      <li>被动：削自身回血，但把<b>护盾的 30% 转成永久生命</b>；技能琉璃三曜 40 级叠护盾、100 级全体周期护盾。</li>
+      <li>集齐 4 张同名<b>觉醒回手</b>，可反复进场施放控制与输出。</li>
+    </ul>
+    <h3>怎么和别的词条配合增益</h3>
+    <ul class="clean muted">
+      <li><b>与"牺牲"体系天生契合</b>：工具人先阵亡 → 立刻触发幻境拉走敌方 999 主C，形成"敌方战力断层、我方保留残局"的对等交换。</li>
+      <li><b>等级速成流</b>：安琪拉自爆启动 → 飞行器绑定海月 → <b>明世隐把临时等级固化</b> → 太乙复活 → "打回原形"窃取敌方核心等级，快速把海月养起来，后期单卡兑掉李信/玄策等主C。</li>
+      <li>站位：决赛<b>后排偏角</b>，前排放墨子/蒙恬扛首轮刺客，确保<b>己方工具人先死</b>触发幻境。</li>
+    </ul>
+    <div class="callout warn">⚠️ 海月怕<b>马可 + 逐鹿</b>等多核体系（没有单一高等级核可拉、克制效率下降）；此时改走自爆流或用弈星镜像复制反制。装备堆<b>百分比生命</b>：不死鸟之眼/炽热/霸者重装/红莲斗篷 + 护命灵珠。</div>
+  </div>
+</section>
+
+<!-- 引擎总结 -->
+<section id="engine">
+  <h2><span class="n">08</span> 词条增益"引擎"总结（一图看懂配合）</h2>
+  <p class="lead">所有主播体系本质都是：<b>①造等级 → ②搬/汇等级 → ③固化/放大 → ④质变爆发</b>。把词条按这四类装配即可。</p>
+  <div class="grid g2">
+    <div class="card"><h4>① 造等级（等级来源）</h4><div class="muted"><span class="k">常小娥</span>助力/送福 · <span class="k">姜子牙</span>多阵营出牌 · <span class="k">瑶妹小鹿</span>连胜成长 · <span class="k">整备</span>(狂铁/老虎)临时等级。</div></div>
+    <div class="card"><h4>② 搬 / 汇等级（汇流到主C）</h4><div class="muted"><span class="k">裴擒虎吸取</span> → <span class="k">司空震继承</span>；<span class="k">牺牲</span>(苏烈/铠/花木兰)阵亡把等级喂主C；<span class="k">小鹿奉献</span>倾泻给李信。</div></div>
+    <div class="card"><h4>③ 固化 / 放大（防清零、再放大）</h4><div class="muted"><span class="k">明世隐</span>临时→永久（牺牲/奉献流命脉）；<span class="k">月之特调</span>每5级加攻速/吸血/双防；<span class="k">露娜/全军动员</span>二次触发整备。</div></div>
+    <div class="card"><h4>④ 质变爆发（收尾）</h4><div class="muted"><span class="k">10/40/100 级质变</span>；司空震空爆 / 艾琳飞行风筝 / 李信复活暴击；<span class="k">海月幻境</span>反制对面主C、<span class="k">钟馗</span>压敌等级兜底。</div></div>
+  </div>
+  <div class="callout gold">🎯 记忆口诀：<b>"常小娥造级、老虎汇级、明世隐锁级、姜子牙铺级；小鹿倾泻、海月反制、钟馗压制。"</b> 你手里的每张牌，先想它属于①②③④哪一环，就知道该不该上、该喂谁。</div>
+</section>
+
+<!-- 来源 -->
+<section id="src">
+  <h2><span class="n">09</span> 数据来源与免责声明</h2>
+  <p class="muted">二次整理，用于理解主播主流体系的词条联动。词条/数值/强度随版本变化，请以正式服与游戏内「灵宝」推荐为准。整理时间：2026-09。</p>
+  <div class="src">
+    <a href="https://www.233leyuan.com/post-detail/2095132154063093760" target="_blank" rel="noopener">233乐园 · 海陆空阵容运营详解</a>
+    <a href="https://www.18183.com/gonglue/202608/orbjcb0c.html" target="_blank" rel="noopener">18183 · 常小娥海陆空(司空震主C)攻略</a>
+    <a href="https://www.jiaoyimao.com/news/354438.html" target="_blank" rel="noopener">交易猫 · 海陆空流派详解(裴擒虎→司空震继承)</a>
+    <a href="https://www.iyingdi.com/tz/post/5715391" target="_blank" rel="noopener">旅法师营地 · 艾琳四人流(克制李信/木兰)</a>
+    <a href="https://www.18183.com/gonglue/202608/5bmbobuq.html" target="_blank" rel="noopener">18183 · 常小娥四人艾琳流打法</a>
+    <a href="https://www.youxiabc.com/p/60452.html" target="_blank" rel="noopener">ABC游戏网 · 瑶妹李信牺牲流(明世隐固化)</a>
+    <a href="https://www.taptap.cn/moment/847450258186177159" target="_blank" rel="noopener">TapTap · 小鹿献祭流李信 T0 运营</a>
+    <a href="https://www.sqxzz.com/186323.html" target="_blank" rel="noopener">瑶妹棋手技能(小鹿/奉献/巨型玩偶)</a>
+    <a href="https://www.18183.com/gonglue/202608/1cp3unme.html" target="_blank" rel="noopener">18183 · 姜子牙玩法(无阵营等级支点)</a>
+    <a href="https://www.jiaoyimao.com/news/355498.html" target="_blank" rel="noopener">交易猫 · 海月连招与阵容(幻境反制)</a>
+  </div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  主播主流阵容 · 词条联动增益详解 ｜ 非官方玩家攻略整理，与腾讯/游戏官方无隶属关系。祝上分顺利。
+</footer>
+
+<button class="totop" id="totop" title="回到顶部">↑ 顶部</button>
+
+<script>
+  const links=[...document.querySelectorAll('nav.tabs a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const totop=document.getElementById('totop');
+  function onScroll(){
+    const y=window.scrollY+120; let idx=0;
+    secs.forEach((s,i)=>{ if(s && s.offsetTop<=y) idx=i; });
+    links.forEach((a,i)=>a.classList.toggle('active', i===idx));
+    totop.style.display=window.scrollY>500?'block':'none';
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  totop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+</script>
+</body>
+</html>
